@@ -1,0 +1,61 @@
+import boto3
+
+# Define your AWS region
+region = 'us-east-1'
+
+# Define your source S3 bucket and CSV file path
+bucket_name = 'tini-d-gluebucket-001'
+csv_key = 'incoming_data/retail/categories.csv'
+
+# Initialize the Glue client
+glue_client = boto3.client('glue', region_name=region)
+
+# Step 1: Create a Glue crawler
+def create_crawler():
+    crawler_name = 'csv-catalog-crawler'
+    database_name = 'glue_db'
+    table_name = ''
+
+    response = glue_client.create_crawler(
+        Name=crawler_name,
+        Role='arn:aws:iam::352196831952:role/tini-d-glue-crawler-role-001',
+        DatabaseName=database_name,
+        Targets={'S3Targets': [{'Path': f's3://{bucket_name}/{csv_key}'}]},
+        TablePrefix=table_name
+    )
+
+    print(f"Glue crawler '{crawler_name}' created successfully.")
+
+# Step 2: Start the Glue crawler
+def start_crawler():
+    crawler_name = 'csv-catalog-crawler'
+
+    response = glue_client.start_crawler(
+        Name=crawler_name
+    )
+
+    print(f"Glue crawler '{crawler_name}' started successfully.")
+
+# Step 3: Create a Glue job to read from S3 and write to Data Catalog
+def create_glue_job():
+    job_name = 'csv-to-glue-job'
+    script_location = 's3://tini-d-gluebucket-001/scripts/categories_script.py'
+
+    response = glue_client.create_job(
+        Name=job_name,
+        Role='arn:aws:iam::352196831952:role/tini-d-glue-crawler-role-001',
+        Command={
+            'Name': 'glueetl',
+            'ScriptLocation': script_location
+        },
+        DefaultArguments={
+            '--job-bookmark-option': 'job-bookmark-enable'
+        }
+    )
+
+    print(f"Glue job '{job_name}' created successfully.")
+
+# Execute the functions
+create_crawler()
+start_crawler()
+create_glue_job()

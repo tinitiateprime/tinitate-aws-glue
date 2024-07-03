@@ -1,0 +1,6 @@
+employee_id,employee_name,department,january_salary,february_salary,march_salary
+1, Alice, Engineering ,"60,000",62000,64000
+2,Bob,HR ,"50,000",51000,52000
+3, Charlie,Engineering,55000,56000,57000
+4,Daniel,HR ,52000,53000,54000
+5,Eve,Finance,62000,63000,64000
